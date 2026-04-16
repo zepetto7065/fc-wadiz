@@ -1024,11 +1024,16 @@
             const grid = document.getElementById('playerGrid');
             grid.innerHTML = '';
 
+            // 전체 선수 기준 카테고리 최대값 계산
+            const globalMaxCategory = Math.max(
+                ...PLAYERS.map(p => Math.max(...Object.values(calculateCategories(p))))
+            );
+
             PLAYERS.forEach(player => {
                 const state = playerStates[player.name];
                 const categories = calculateCategories(player);
                 const total = calculateTotal(player);
-                const maxCategory = Math.max(...Object.values(categories));
+                const maxCategory = globalMaxCategory;
 
                 const card = document.createElement('div');
                 card.className = `player-card ${!state.selected ? 'unselected' : ''} ${state.locked !== 'none' ? 'locked-' + state.locked : ''}`;
