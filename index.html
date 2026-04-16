@@ -778,6 +778,36 @@
         .hidden {
             display: none;
         }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: 2px solid var(--accent-primary);
+            font-weight: 500;
+            font-size: 1rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .btn-share {
+            margin-top: 15px;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body>
@@ -834,8 +864,12 @@
         <div class="final-decision" id="finalDecision">
             <div class="final-title">🎉 팀 구성 완료! 🎉</div>
             <div class="final-vs" id="finalVsDisplay"></div>
-            <button class="btn-balance" onclick="resetBalance()">다시 뽑기</button>
+            <button class="btn btn-primary btn-share" onclick="copyShareLink()">📋 링크 복사</button>
+            <button class="btn-balance" onclick="resetBalance()" style="margin-top: 15px;">다시 뽑기</button>
         </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
 
         <!-- Modal for detailed stats -->
         <div class="modal" id="statsModal">
@@ -969,6 +1003,9 @@
 
             renderPlayerGrid();
             updateTeamSizeButtons();
+
+            // URL hash에서 팀 데이터 로드
+            loadFromHash();
         }
 
         // 카테고리별 점수 계산
@@ -1391,6 +1428,15 @@
             const blackTeam = PLAYERS.filter(p => combo.blackTeam.includes(p.name));
             const whiteTeam = PLAYERS.filter(p => combo.whiteTeam.includes(p.name));
 
+            // URL hash에 팀 데이터 저장
+            const hashData = { b: combo.blackTeam, w: combo.whiteTeam };
+            window.location.hash = 'team=' + btoa(unescape(encodeURIComponent(JSON.stringify(hashData))));
+
+            showFinalDecision(blackTeam, whiteTeam);
+        }
+
+        // 최종 결정 화면 표시
+        function showFinalDecision(blackTeam, whiteTeam) {
             const finalDisplay = document.getElementById('finalDecision');
             const vsDisplay = document.getElementById('finalVsDisplay');
 
@@ -1417,6 +1463,7 @@
             `;
 
             // 컨페티 효과
+            document.querySelectorAll('.confetti').forEach(el => el.remove());
             for (let i = 0; i < 50; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
@@ -1430,6 +1477,53 @@
             finalDisplay.scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 공유 링크 복사
+        function copyShareLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('링크가 복사되었습니다!');
+            }).catch(() => {
+                // fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('링크가 복사되었습니다!');
+            });
+        }
+
+        // 토스트 메시지
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // URL hash에서 팀 데이터 로드
+        function loadFromHash() {
+            const hash = window.location.hash;
+            if (!hash.startsWith('#team=')) return false;
+
+            try {
+                const encoded = hash.substring('#team='.length);
+                const json = decodeURIComponent(escape(atob(encoded)));
+                const data = JSON.parse(json);
+
+                const blackTeam = data.b.map(name => PLAYERS.find(p => p.name === name)).filter(Boolean);
+                const whiteTeam = data.w.map(name => PLAYERS.find(p => p.name === name)).filter(Boolean);
+
+                if (blackTeam.length === 0 || whiteTeam.length === 0) return false;
+
+                showFinalDecision(blackTeam, whiteTeam);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
         // 다시 뽑기
         function resetBalance() {
             const finalDisplay = document.getElementById('finalDecision');
@@ -1440,6 +1534,9 @@
 
             // 컨페티 제거
             document.querySelectorAll('.confetti').forEach(el => el.remove());
+
+            // URL hash 제거
+            history.replaceState(null, '', window.location.pathname + window.location.search);
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
