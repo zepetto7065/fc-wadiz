@@ -1001,15 +1001,16 @@
             const savedStates = localStorage.getItem('playerStates');
             if (savedStates) {
                 Object.assign(playerStates, JSON.parse(savedStates));
-            } else {
-                // 기본값: 모든 선수 선택됨
-                PLAYERS.forEach(player => {
+            }
+            // 새로 추가된 선수 포함하여 누락된 선수 상태 초기화
+            PLAYERS.forEach(player => {
+                if (!playerStates[player.name]) {
                     playerStates[player.name] = {
                         selected: true,
-                        locked: 'none' // 'none', 'black', 'white'
+                        locked: 'none'
                     };
-                });
-            }
+                }
+            });
 
             renderPlayerGrid();
             updateTeamSizeButtons();
