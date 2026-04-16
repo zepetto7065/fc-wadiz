@@ -976,10 +976,11 @@
             const s = player.stats;
             return {
                 attack: s.shotPower + s.shotAccuracy + s.finishing,
-                midfield: s.passing + s.positioning,
-                defense: s.defense + s.physical,
-                physical: s.stamina + s.speed + s.acceleration,
-                mental: s.mentality + s.aggression
+                stamina: s.stamina + s.mentality,
+                defense: s.defense + s.positioning,
+                physical: s.physical + s.aggression,
+                speed: s.speed + s.acceleration,
+                pass: s.passing
             };
         }
 
@@ -1022,7 +1023,7 @@
 
                     <div class="player-stats-mini">
                         ${(() => {
-                            const labels = { attack: '공격', midfield: '미드', defense: '수비', physical: '피지컬', mental: '멘탈' };
+                            const labels = { attack: '공격', stamina: '체력', defense: '수비', physical: '피지컬', speed: '속도', pass: '패스' };
                             const keys = Object.keys(categories);
                             const cx = 80, cy = 80, r = 55;
                             const count = keys.length;
@@ -1227,10 +1228,10 @@
         // 밸런스 점수 계산
         function calculateBalanceScore(blackTeam, whiteTeam) {
             const blackCategories = {
-                attack: 0, midfield: 0, defense: 0, physical: 0, mental: 0, total: 0
+                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0, total: 0
             };
             const whiteCategories = {
-                attack: 0, midfield: 0, defense: 0, physical: 0, mental: 0, total: 0
+                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0, total: 0
             };
 
             blackTeam.forEach(player => {
@@ -1246,7 +1247,7 @@
             });
 
             const totalDiff = Math.abs(blackCategories.total - whiteCategories.total);
-            const categoryDiffs = ['attack', 'midfield', 'defense', 'physical', 'mental']
+            const categoryDiffs = ['attack', 'stamina', 'defense', 'physical', 'speed', 'pass']
                 .map(key => Math.abs(blackCategories[key] - whiteCategories[key]))
                 .reduce((a, b) => a + b, 0);
 
@@ -1273,10 +1274,10 @@
             const { blackTeam, whiteTeam, score } = result;
 
             const blackCategories = {
-                attack: 0, midfield: 0, defense: 0, physical: 0, mental: 0
+                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0
             };
             const whiteCategories = {
-                attack: 0, midfield: 0, defense: 0, physical: 0, mental: 0
+                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0
             };
 
             blackTeam.forEach(player => {
@@ -1304,11 +1305,12 @@
             card.className = 'result-card';
 
             const categoryLabels = {
-                attack: '공격력',
-                midfield: '미드필드',
-                defense: '수비력',
+                attack: '공격',
+                stamina: '체력',
+                defense: '수비',
                 physical: '피지컬',
-                mental: '멘탈'
+                speed: '속도',
+                pass: '패스'
             };
 
             card.innerHTML = `
@@ -1489,8 +1491,9 @@
             const categories = calculateCategories(player);
             const maxValue = Math.max(...Object.values(categories));
 
-            const categoryNames = ['공격력', '미드필드', '수비력', '피지컬', '멘탈'];
+            const categoryNames = ['공격', '체력', '수비', '피지컬', '속도', '패스'];
             const values = Object.values(categories);
+            const numCategories = categoryNames.length;
 
             const centerX = 200;
             const centerY = 200;
@@ -1499,16 +1502,21 @@
 
             let svgContent = '';
 
-            // 배경 동심원
+            // 배경 동심 육각형
             for (let i = levels; i > 0; i--) {
                 const radius = (maxRadius / levels) * i;
-                svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}"
+                let bgPoints = '';
+                for (let j = 0; j < numCategories; j++) {
+                    const angle = (Math.PI * 2 * j) / numCategories - Math.PI / 2;
+                    bgPoints += `${centerX + Math.cos(angle) * radius},${centerY + Math.sin(angle) * radius} `;
+                }
+                svgContent += `<polygon points="${bgPoints}"
                     fill="none" stroke="var(--border-color)" stroke-width="1" opacity="0.3"/>`;
             }
 
             // 축 그리기
-            const angleStep = (Math.PI * 2) / 5;
-            for (let i = 0; i < 5; i++) {
+            const angleStep = (Math.PI * 2) / numCategories;
+            for (let i = 0; i < numCategories; i++) {
                 const angle = angleStep * i - Math.PI / 2;
                 const x = centerX + Math.cos(angle) * maxRadius;
                 const y = centerY + Math.sin(angle) * maxRadius;
@@ -1526,7 +1534,7 @@
 
             // 데이터 폴리곤
             let points = '';
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < numCategories; i++) {
                 const angle = angleStep * i - Math.PI / 2;
                 const value = values[i];
                 const radius = (value / maxValue) * maxRadius;
@@ -1540,7 +1548,7 @@
                 stroke="var(--accent-primary)" stroke-width="3"/>`;
 
             // 데이터 포인트
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < numCategories; i++) {
                 const angle = angleStep * i - Math.PI / 2;
                 const value = values[i];
                 const radius = (value / maxValue) * maxRadius;
@@ -1549,8 +1557,6 @@
 
                 svgContent += `<circle cx="${x}" cy="${y}" r="5"
                     fill="var(--accent-primary)" stroke="var(--bg-dark)" stroke-width="2"/>`;
-
-                // 값 표시 (숨김)
             }
 
             svg.innerHTML = svgContent;
