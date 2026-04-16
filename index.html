@@ -220,43 +220,13 @@
 
         .player-stats-mini {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            justify-content: center;
             margin-bottom: 15px;
         }
 
-        .stat-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            width: 60px;
-        }
-
-        .stat-bar-bg {
-            flex: 1;
-            height: 6px;
-            background: var(--border-color);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .stat-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
-        .stat-value {
-            font-size: 0.75rem;
-            font-weight: 700;
-            width: 30px;
-            text-align: right;
+        .mini-radar-chart {
+            width: 160px;
+            height: 160px;
         }
 
         .team-toggle {
@@ -1051,25 +1021,51 @@
                     <div class="player-total" style="display:none">${total}</div>
 
                     <div class="player-stats-mini">
-                        ${Object.entries(categories).map(([key, value]) => {
-                            const labels = {
-                                attack: '공격력',
-                                midfield: '미드필드',
-                                defense: '수비력',
-                                physical: '피지컬',
-                                mental: '멘탈'
-                            };
-                            const percentage = (value / maxCategory) * 100;
-                            return `
-                                <div class="stat-bar">
-                                    <span class="stat-label">${labels[key]}</span>
-                                    <div class="stat-bar-bg">
-                                        <div class="stat-bar-fill" style="width: ${percentage}%"></div>
-                                    </div>
-                                    <span class="stat-value" style="display:none">${value}</span>
-                                </div>
-                            `;
-                        }).join('')}
+                        ${(() => {
+                            const labels = { attack: '공격', midfield: '미드', defense: '수비', physical: '피지컬', mental: '멘탈' };
+                            const keys = Object.keys(categories);
+                            const cx = 80, cy = 80, r = 55;
+                            const count = keys.length;
+                            const angleOffset = -Math.PI / 2;
+
+                            // 배경 격자 (3단계)
+                            let gridLines = '';
+                            [0.33, 0.66, 1.0].forEach(scale => {
+                                const pts = keys.map((_, i) => {
+                                    const angle = angleOffset + (2 * Math.PI * i) / count;
+                                    return `${cx + Math.cos(angle) * r * scale},${cy + Math.sin(angle) * r * scale}`;
+                                }).join(' ');
+                                gridLines += '<polygon points="' + pts + '" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>';
+                            });
+
+                            // 축선
+                            let axisLines = keys.map((_, i) => {
+                                const angle = angleOffset + (2 * Math.PI * i) / count;
+                                const x = cx + Math.cos(angle) * r;
+                                const y = cy + Math.sin(angle) * r;
+                                return '<line x1="' + cx + '" y1="' + cy + '" x2="' + x + '" y2="' + y + '" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>';
+                            }).join('');
+
+                            // 데이터 다각형
+                            const dataPoints = keys.map((key, i) => {
+                                const angle = angleOffset + (2 * Math.PI * i) / count;
+                                const val = categories[key] / maxCategory;
+                                return `${cx + Math.cos(angle) * r * val},${cy + Math.sin(angle) * r * val}`;
+                            }).join(' ');
+
+                            // 라벨
+                            const labelEls = keys.map((key, i) => {
+                                const angle = angleOffset + (2 * Math.PI * i) / count;
+                                const lx = cx + Math.cos(angle) * (r + 18);
+                                const ly = cy + Math.sin(angle) * (r + 18);
+                                return '<text x="' + lx + '" y="' + (ly + 3) + '" fill="#a0aec0" font-size="9" font-weight="500" text-anchor="middle" font-family="Noto Sans KR">' + labels[key] + '</text>';
+                            }).join('');
+
+                            return '<svg class="mini-radar-chart" viewBox="0 0 160 160">'
+                                + gridLines + axisLines
+                                + '<polygon points="' + dataPoints + '" fill="rgba(0,255,136,0.2)" stroke="var(--accent-primary)" stroke-width="2"/>'
+                                + labelEls + '</svg>';
+                        })()}
                     </div>
 
                     <div class="team-toggle">
