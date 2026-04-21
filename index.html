@@ -841,10 +841,12 @@
             <div id="warningMessage" class="warning-message hidden"></div>
 
             <div class="team-size-selector">
-                <button class="size-btn" data-size="3" onclick="selectTeamSize(3)">3 vs 3</button>
-                <button class="size-btn" data-size="4" onclick="selectTeamSize(4)">4 vs 4</button>
-                <button class="size-btn" data-size="5" onclick="selectTeamSize(5)">5 vs 5</button>
-                <button class="size-btn" data-size="6" onclick="selectTeamSize(6)">6 vs 6</button>
+                <button class="size-btn" data-black="3" data-white="3" onclick="selectTeamSize(3,3)">3 vs 3</button>
+                <button class="size-btn" data-black="4" data-white="3" onclick="selectTeamSize(4,3)">4 vs 3</button>
+                <button class="size-btn" data-black="3" data-white="4" onclick="selectTeamSize(3,4)">3 vs 4</button>
+                <button class="size-btn" data-black="4" data-white="4" onclick="selectTeamSize(4,4)">4 vs 4</button>
+                <button class="size-btn" data-black="5" data-white="5" onclick="selectTeamSize(5,5)">5 vs 5</button>
+                <button class="size-btn" data-black="6" data-white="6" onclick="selectTeamSize(6,6)">6 vs 6</button>
             </div>
 
             <div class="balance-button-container">
@@ -1019,15 +1021,15 @@
             loadFromHash();
         }
 
-        // 카테고리별 점수 계산
+        // 카테고리별 점수 계산 (평균값으로 정규화)
         function calculateCategories(player) {
             const s = player.stats;
             return {
-                attack: s.shotPower + s.shotAccuracy + s.finishing,
-                stamina: s.stamina + s.mentality,
-                defense: s.defense + s.positioning,
-                physical: s.physical + s.aggression,
-                speed: s.speed + s.acceleration,
+                attack: (s.shotPower + s.shotAccuracy + s.finishing) / 3,
+                stamina: (s.stamina + s.mentality) / 2,
+                defense: (s.defense + s.positioning) / 2,
+                physical: (s.physical + s.aggression) / 2,
+                speed: (s.speed + s.acceleration) / 2,
                 pass: s.passing
             };
         }
@@ -1173,8 +1175,9 @@
             const balanceBtn = document.getElementById('balanceBtn');
 
             document.querySelectorAll('.size-btn').forEach(btn => {
-                const size = parseInt(btn.dataset.size);
-                const required = size * 2;
+                const blackSize = parseInt(btn.dataset.black);
+                const whiteSize = parseInt(btn.dataset.white);
+                const required = blackSize + whiteSize;
 
                 if (count >= required) {
                     btn.disabled = false;
@@ -1200,8 +1203,8 @@
                 const lockedBlack = selectedPlayers.filter(p => playerStates[p.name].locked === 'black').length;
                 const lockedWhite = selectedPlayers.filter(p => playerStates[p.name].locked === 'white').length;
 
-                if (lockedBlack > selectedTeamSize || lockedWhite > selectedTeamSize) {
-                    warningMsg.textContent = `⚠️ 고정된 선수가 너무 많습니다 (흑팀: ${lockedBlack}, 백팀: ${lockedWhite}, 팀 크기: ${selectedTeamSize})`;
+                if (lockedBlack > selectedTeamSize.black || lockedWhite > selectedTeamSize.white) {
+                    warningMsg.textContent = `⚠️ 고정된 선수가 너무 많습니다 (흑팀: ${lockedBlack}/${selectedTeamSize.black}, 백팀: ${lockedWhite}/${selectedTeamSize.white})`;
                     warningMsg.classList.remove('hidden');
                     balanceBtn.disabled = true;
                 } else {
@@ -1212,10 +1215,10 @@
         }
 
         // 팀 크기 선택
-        function selectTeamSize(size) {
-            selectedTeamSize = size;
+        function selectTeamSize(blackSize, whiteSize) {
+            selectedTeamSize = { black: blackSize, white: whiteSize };
             document.querySelectorAll('.size-btn').forEach(btn => {
-                if (parseInt(btn.dataset.size) === size) {
+                if (parseInt(btn.dataset.black) === blackSize && parseInt(btn.dataset.white) === whiteSize) {
                     btn.classList.add('active');
                 } else {
                     btn.classList.remove('active');
@@ -1248,8 +1251,8 @@
             const lockedWhite = selectedPlayers.filter(p => playerStates[p.name].locked === 'white');
             const unlockedPlayers = selectedPlayers.filter(p => playerStates[p.name].locked === 'none');
 
-            const blackNeeded = selectedTeamSize - lockedBlack.length;
-            const whiteNeeded = selectedTeamSize - lockedWhite.length;
+            const blackNeeded = selectedTeamSize.black - lockedBlack.length;
+            const whiteNeeded = selectedTeamSize.white - lockedWhite.length;
 
             if (blackNeeded < 0 || whiteNeeded < 0 || blackNeeded + whiteNeeded !== unlockedPlayers.length) {
                 alert('팀 구성이 불가능합니다. 고정된 선수를 확인해주세요.');
