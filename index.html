@@ -1027,10 +1027,10 @@
             return {
                 attack: (s.shotPower + s.shotAccuracy + s.finishing) / 3,
                 stamina: (s.stamina + s.mentality) / 2,
-                defense: (s.defense + s.positioning) / 2,
                 physical: (s.physical + s.aggression) / 2,
-                speed: (s.speed + s.acceleration) / 2,
-                pass: s.passing
+                defense: (s.defense + s.positioning) / 2,
+                pass: s.passing,
+                speed: (s.speed + s.acceleration) / 2
             };
         }
 
@@ -1073,7 +1073,7 @@
 
                     <div class="player-stats-mini">
                         ${(() => {
-                            const labels = { attack: '공격', stamina: '체력', defense: '수비', physical: '피지컬', speed: '속도', pass: '패스' };
+                            const labels = { attack: '공격', stamina: '체력', physical: '피지컬', defense: '수비', pass: '패스', speed: '속도' };
                             const keys = Object.keys(categories);
                             const cx = 80, cy = 80, r = 55;
                             const count = keys.length;
@@ -1279,10 +1279,10 @@
         // 밸런스 점수 계산
         function calculateBalanceScore(blackTeam, whiteTeam) {
             const blackCategories = {
-                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0, total: 0
+                attack: 0, stamina: 0, physical: 0, defense: 0, pass: 0, speed: 0, total: 0
             };
             const whiteCategories = {
-                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0, total: 0
+                attack: 0, stamina: 0, physical: 0, defense: 0, pass: 0, speed: 0, total: 0
             };
 
             blackTeam.forEach(player => {
@@ -1298,7 +1298,7 @@
             });
 
             const totalDiff = Math.abs(blackCategories.total - whiteCategories.total);
-            const categoryDiffs = ['attack', 'stamina', 'defense', 'physical', 'speed', 'pass']
+            const categoryDiffs = ['attack', 'stamina', 'physical', 'defense', 'pass', 'speed']
                 .map(key => Math.abs(blackCategories[key] - whiteCategories[key]))
                 .reduce((a, b) => a + b, 0);
 
@@ -1325,10 +1325,10 @@
             const { blackTeam, whiteTeam, score } = result;
 
             const blackCategories = {
-                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0
+                attack: 0, stamina: 0, physical: 0, defense: 0, pass: 0, speed: 0
             };
             const whiteCategories = {
-                attack: 0, stamina: 0, defense: 0, physical: 0, speed: 0, pass: 0
+                attack: 0, stamina: 0, physical: 0, defense: 0, pass: 0, speed: 0
             };
 
             blackTeam.forEach(player => {
@@ -1358,10 +1358,10 @@
             const categoryLabels = {
                 attack: '공격',
                 stamina: '체력',
-                defense: '수비',
                 physical: '피지컬',
-                speed: '속도',
-                pass: '패스'
+                defense: '수비',
+                pass: '패스',
+                speed: '속도'
             };
 
             card.innerHTML = `
@@ -1602,7 +1602,7 @@
             const categories = calculateCategories(player);
             const maxValue = Math.max(...Object.values(categories));
 
-            const categoryNames = ['공격', '체력', '수비', '피지컬', '속도', '패스'];
+            const categoryNames = ['공격', '체력', '피지컬', '수비', '패스', '속도'];
             const values = Object.values(categories);
             const numCategories = categoryNames.length;
 
