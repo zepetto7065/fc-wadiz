@@ -853,59 +853,6 @@
             text-align: right;
         }
 
-        .scoreboard-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            margin-left: 6px;
-        }
-
-        .scoreboard-btn:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .scoreboard-btn.btn-minus:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .scoreboard-actions {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .scoreboard-reset {
-            display: block;
-            width: 100%;
-            margin-top: 10px;
-            padding: 6px;
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            font-family: 'Noto Sans KR', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .scoreboard-reset:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
         @media (max-width: 768px) {
             .scoreboard {
                 position: static;
@@ -933,6 +880,7 @@
             <div class="selection-controls">
                 <button class="btn" onclick="selectAllPlayers()">전체 선택</button>
                 <button class="btn" onclick="deselectAllPlayers()">전체 해제</button>
+                <button class="btn" onclick="addGuestPlayer()">+ 용병 추가</button>
                 <button class="btn btn-upload">
                     📁 엑셀 업로드
                     <input type="file" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
@@ -953,6 +901,8 @@
                 <button class="size-btn" data-black="4" data-white="3" onclick="selectTeamSize(4,3)">4 vs 3</button>
                 <button class="size-btn" data-black="3" data-white="4" onclick="selectTeamSize(3,4)">3 vs 4</button>
                 <button class="size-btn" data-black="4" data-white="4" onclick="selectTeamSize(4,4)">4 vs 4</button>
+                <button class="size-btn" data-black="5" data-white="4" onclick="selectTeamSize(5,4)">5 vs 4</button>
+                <button class="size-btn" data-black="4" data-white="5" onclick="selectTeamSize(4,5)">4 vs 5</button>
                 <button class="size-btn" data-black="5" data-white="5" onclick="selectTeamSize(5,5)">5 vs 5</button>
                 <button class="size-btn" data-black="6" data-white="6" onclick="selectTeamSize(6,6)">6 vs 6</button>
             </div>
@@ -1001,7 +951,7 @@
         let PLAYERS = [
             {
                 name: '박경원',
-                type: '줄라탄',
+                type: 'FW',
                 stats: {
                     speed: 10, acceleration: 8, stamina: 12,
                     shotPower: 14, shotAccuracy: 9, finishing: 12,
@@ -1011,7 +961,7 @@
             },
             {
                 name: '강주석',
-                type: '헐크',
+                type: 'DF',
                 stats: {
                     speed: 8, acceleration: 8, stamina: 10,
                     shotPower: 10, shotAccuracy: 10, finishing: 10,
@@ -1021,7 +971,7 @@
             },
             {
                 name: '조수빈',
-                type: '스테판커리',
+                type: 'MF',
                 stats: {
                     speed: 14, acceleration: 13, stamina: 16,
                     shotPower: 12, shotAccuracy: 12, finishing: 11,
@@ -1031,7 +981,7 @@
             },
             {
                 name: '조광진',
-                type: '루니',
+                type: 'MF',
                 stats: {
                     speed: 11, acceleration: 10, stamina: 17,
                     shotPower: 12, shotAccuracy: 10, finishing: 10,
@@ -1041,7 +991,7 @@
             },
             {
                 name: '문연이',
-                type: '메시',
+                type: 'FW',
                 stats: {
                     speed: 10, acceleration: 12, stamina: 14,
                     shotPower: 10, shotAccuracy: 14, finishing: 16,
@@ -1051,7 +1001,7 @@
             },
             {
                 name: '신현철',
-                type: '네이마르',
+                type: 'FW',
                 stats: {
                     speed: 12, acceleration: 12, stamina: 12,
                     shotPower: 13, shotAccuracy: 16, finishing: 15,
@@ -1061,7 +1011,7 @@
             },
             {
                 name: '유상문',
-                type: '사비 알론소',
+                type: 'CDM',
                 stats: {
                     speed: 13, acceleration: 14, stamina: 12,
                     shotPower: 16, shotAccuracy: 13, finishing: 12,
@@ -1071,7 +1021,7 @@
             },
             {
                 name: '조진호',
-                type: '캉테',
+                type: 'MF',
                 stats: {
                     speed: 13, acceleration: 16, stamina: 19,
                     shotPower: 10, shotAccuracy: 11, finishing: 12,
@@ -1081,7 +1031,7 @@
             },
             {
                 name: '이병민',
-                type: '긱스',
+                type: 'DF',
                 stats: {
                     speed: 8, acceleration: 10, stamina: 8,
                     shotPower: 10, shotAccuracy: 8, finishing: 7,
@@ -1091,7 +1041,7 @@
             },
             {
                 name: '박윤기',
-                type: '아다마 트라오레',
+                type: 'DF',
                 stats: {
                     speed: 8, acceleration: 8, stamina: 16,
                     shotPower: 12, shotAccuracy: 8, finishing: 12,
@@ -1384,6 +1334,29 @@
             displayResults(results.slice(0, 3));
         }
 
+        // 포지션 그룹 분류 (FW=공격, MF/CDM=미드, DF=수비)
+        function getPositionGroup(type) {
+            if (type === 'FW') return 'attack';
+            if (type === 'DF') return 'defense';
+            return 'mid'; // MF, CDM 등
+        }
+
+        // 포지션 불균형 패널티 계산
+        function calculatePositionPenalty(blackTeam, whiteTeam) {
+            const groups = ['attack', 'mid', 'defense'];
+            const blackPos = { attack: 0, mid: 0, defense: 0 };
+            const whitePos = { attack: 0, mid: 0, defense: 0 };
+
+            blackTeam.forEach(p => blackPos[getPositionGroup(p.type)]++);
+            whiteTeam.forEach(p => whitePos[getPositionGroup(p.type)]++);
+
+            let penalty = 0;
+            groups.forEach(g => {
+                penalty += Math.abs(blackPos[g] - whitePos[g]);
+            });
+            return penalty * 8;
+        }
+
         // 밸런스 점수 계산
         function calculateBalanceScore(blackTeam, whiteTeam) {
             const blackCategories = {
@@ -1410,7 +1383,9 @@
                 .map(key => Math.abs(blackCategories[key] - whiteCategories[key]))
                 .reduce((a, b) => a + b, 0);
 
-            return totalDiff + 0.5 * categoryDiffs;
+            const positionPenalty = calculatePositionPenalty(blackTeam, whiteTeam);
+
+            return totalDiff + 0.5 * categoryDiffs + positionPenalty;
         }
 
         // 결과 표시
@@ -1663,6 +1638,31 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // 용병 추가
+        function addGuestPlayer() {
+            const name = prompt('용병 이름을 입력하세요:');
+            if (!name || !name.trim()) return;
+            const trimmed = name.trim();
+
+            if (PLAYERS.find(p => p.name === trimmed)) {
+                alert('이미 존재하는 선수입니다.');
+                return;
+            }
+
+            // 전체 선수 스탯 평균 계산
+            const avgStats = {};
+            const statKeys = Object.keys(PLAYERS[0].stats);
+            statKeys.forEach(key => {
+                avgStats[key] = Math.round(PLAYERS.reduce((sum, p) => sum + p.stats[key], 0) / PLAYERS.length);
+            });
+
+            PLAYERS.push({ name: trimmed, type: '?', stats: avgStats });
+            playerStates[trimmed] = { selected: true, locked: 'none' };
+            renderPlayerGrid();
+            updateTeamSizeButtons();
+            showToast(`${trimmed} 용병이 추가되었습니다 (평균 스탯)`);
+        }
+
         // 선수 상세 정보 모달
         function showPlayerDetails(name) {
             const player = PLAYERS.find(p => p.name === name);
@@ -1792,27 +1792,46 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                    // 데이터 파싱 및 업데이트
-                    const newPlayers = jsonData.map(row => ({
-                        name: row['이름'],
-                        type: row['유형'],
-                        stats: {
-                            speed: row['속력'],
-                            acceleration: row['가속도'],
-                            stamina: row['체력'],
-                            shotPower: row['슛파워'],
-                            shotAccuracy: row['슛정확도'],
-                            finishing: row['골결정력'],
-                            passing: row['패스'],
-                            defense: row['수비'],
-                            physical: row['몸싸움'],
-                            positioning: row['위치선정'],
-                            mentality: row['정신력'],
-                            aggression: row['적극성']
-                        }
-                    }));
+                    // 선수 이름 행 찾기 (2번째 행, index 1)
+                    const nameRow = rows[1];
+                    const playerNames = nameRow.slice(1).filter(Boolean);
+
+                    // 스탯 매핑 (한글 행 라벨 -> 영어 키)
+                    const statKeyMap = {
+                        '속력': 'speed', '가속도': 'acceleration', '체력': 'stamina',
+                        '슛파워': 'shotPower', '슛정확도': 'shotAccuracy', '골 결정력': 'finishing', '골결정력': 'finishing',
+                        '패스': 'passing', '수비': 'defense', '몸싸움': 'physical',
+                        '위치선정': 'positioning', '정신력': 'mentality', '적극성': 'aggression'
+                    };
+
+                    // 행별 데이터 수집
+                    const rowMap = {};
+                    rows.forEach(row => {
+                        if (row[0]) rowMap[row[0]] = row.slice(1);
+                    });
+
+                    // 선수 데이터 파싱
+                    const newPlayers = playerNames.map((name, idx) => {
+                        const stats = {};
+                        Object.entries(statKeyMap).forEach(([label, key]) => {
+                            stats[key] = (rowMap[label] && rowMap[label][idx]) || 0;
+                        });
+                        const type = (rowMap['유형'] && rowMap['유형'][idx]) || '';
+                        return { name, type, stats };
+                    });
+
+                    // 승점 데이터 파싱
+                    if (rowMap['승점']) {
+                        playerNames.forEach((name, idx) => {
+                            const score = rowMap['승점'][idx];
+                            if (score != null && SCOREBOARD_SCORES.hasOwnProperty(name)) {
+                                SCOREBOARD_SCORES[name] = Number(score) || 0;
+                            }
+                        });
+                        renderScoreboard();
+                    }
 
                     // 기존 선수 상태 유지하면서 업데이트
                     PLAYERS = newPlayers;
@@ -1847,24 +1866,15 @@
         };
 
         // === 승점 스코어보드 ===
-        const SCOREBOARD_PLAYERS = ['문연이', '신현철', '이병민', '조진호'];
-        const SCOREBOARD_KEY = 'fc_wadiz_scoreboard';
-
-        function loadScoreboard() {
-            const saved = localStorage.getItem(SCOREBOARD_KEY);
-            if (saved) return JSON.parse(saved);
-            const initial = {};
-            SCOREBOARD_PLAYERS.forEach(name => initial[name] = 0);
-            return initial;
-        }
-
-        function saveScoreboard(scores) {
-            localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(scores));
-        }
+        const SCOREBOARD_SCORES = {
+            '문연이': 0,
+            '신현철': 0,
+            '이병민': 0,
+            '조진호': 0
+        };
 
         function renderScoreboard() {
-            const scores = loadScoreboard();
-            const sorted = SCOREBOARD_PLAYERS.slice().sort((a, b) => scores[b] - scores[a]);
+            const sorted = Object.keys(SCOREBOARD_SCORES).sort((a, b) => SCOREBOARD_SCORES[b] - SCOREBOARD_SCORES[a]);
             const el = document.getElementById('scoreboard');
 
             el.innerHTML = `
@@ -1872,30 +1882,10 @@
                 ${sorted.map(name => `
                     <div class="scoreboard-row">
                         <span class="scoreboard-name">${name}</span>
-                        <div class="scoreboard-actions">
-                            <span class="scoreboard-points">${scores[name]}</span>
-                            <button class="scoreboard-btn" onclick="addPoints('${name}', 3)" title="+3 승점">+3</button>
-                            <button class="scoreboard-btn btn-minus" onclick="addPoints('${name}', -3)" title="-3 승점">-3</button>
-                        </div>
+                        <span class="scoreboard-points">${SCOREBOARD_SCORES[name]}</span>
                     </div>
                 `).join('')}
-                <button class="scoreboard-reset" onclick="resetScoreboard()">초기화</button>
             `;
-        }
-
-        function addPoints(name, pts) {
-            const scores = loadScoreboard();
-            scores[name] = Math.max(0, (scores[name] || 0) + pts);
-            saveScoreboard(scores);
-            renderScoreboard();
-        }
-
-        function resetScoreboard() {
-            if (!confirm('승점을 모두 초기화하시겠습니까?')) return;
-            const scores = {};
-            SCOREBOARD_PLAYERS.forEach(name => scores[name] = 0);
-            saveScoreboard(scores);
-            renderScoreboard();
         }
 
         // 초기화 실행
