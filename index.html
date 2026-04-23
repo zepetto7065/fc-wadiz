@@ -808,10 +808,118 @@
             padding: 14px 32px;
             font-size: 1.1rem;
         }
+
+        /* Scoreboard */
+        .scoreboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 16px 20px;
+            z-index: 900;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .scoreboard-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-secondary);
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .scoreboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .scoreboard-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .scoreboard-points {
+            font-weight: 900;
+            font-size: 1.1rem;
+            color: var(--accent-primary);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .scoreboard-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-left: 6px;
+        }
+
+        .scoreboard-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .scoreboard-btn.btn-minus:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .scoreboard-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .scoreboard-reset {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 6px;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scoreboard-reset:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .scoreboard {
+                position: static;
+                margin: 0 auto 20px;
+                max-width: 300px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Scoreboard -->
+        <div class="scoreboard" id="scoreboard"></div>
+
         <!-- Header -->
         <header>
             <h1>⚽ FC 와디즈 팀 밸런서</h1>
@@ -1738,8 +1846,61 @@
             }
         };
 
+        // === 승점 스코어보드 ===
+        const SCOREBOARD_PLAYERS = ['문연이', '신현철', '이병민', '조진호'];
+        const SCOREBOARD_KEY = 'fc_wadiz_scoreboard';
+
+        function loadScoreboard() {
+            const saved = localStorage.getItem(SCOREBOARD_KEY);
+            if (saved) return JSON.parse(saved);
+            const initial = {};
+            SCOREBOARD_PLAYERS.forEach(name => initial[name] = 0);
+            return initial;
+        }
+
+        function saveScoreboard(scores) {
+            localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(scores));
+        }
+
+        function renderScoreboard() {
+            const scores = loadScoreboard();
+            const sorted = SCOREBOARD_PLAYERS.slice().sort((a, b) => scores[b] - scores[a]);
+            const el = document.getElementById('scoreboard');
+
+            el.innerHTML = `
+                <div class="scoreboard-title">승점 순위</div>
+                ${sorted.map(name => `
+                    <div class="scoreboard-row">
+                        <span class="scoreboard-name">${name}</span>
+                        <div class="scoreboard-actions">
+                            <span class="scoreboard-points">${scores[name]}</span>
+                            <button class="scoreboard-btn" onclick="addPoints('${name}', 3)" title="+3 승점">+3</button>
+                            <button class="scoreboard-btn btn-minus" onclick="addPoints('${name}', -3)" title="-3 승점">-3</button>
+                        </div>
+                    </div>
+                `).join('')}
+                <button class="scoreboard-reset" onclick="resetScoreboard()">초기화</button>
+            `;
+        }
+
+        function addPoints(name, pts) {
+            const scores = loadScoreboard();
+            scores[name] = Math.max(0, (scores[name] || 0) + pts);
+            saveScoreboard(scores);
+            renderScoreboard();
+        }
+
+        function resetScoreboard() {
+            if (!confirm('승점을 모두 초기화하시겠습니까?')) return;
+            const scores = {};
+            SCOREBOARD_PLAYERS.forEach(name => scores[name] = 0);
+            saveScoreboard(scores);
+            renderScoreboard();
+        }
+
         // 초기화 실행
         init();
+        renderScoreboard();
     </script>
 </body>
 </html>
