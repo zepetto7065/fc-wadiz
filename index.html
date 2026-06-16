@@ -808,65 +808,10 @@
             padding: 14px 32px;
             font-size: 1.1rem;
         }
-
-        /* Scoreboard */
-        .scoreboard {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-card);
-            border: 2px solid var(--border-color);
-            border-radius: 15px;
-            padding: 16px 20px;
-            z-index: 900;
-            min-width: 180px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        }
-
-        .scoreboard-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--accent-secondary);
-            text-align: center;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .scoreboard-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-        }
-
-        .scoreboard-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .scoreboard-points {
-            font-weight: 900;
-            font-size: 1.1rem;
-            color: var(--accent-primary);
-            min-width: 30px;
-            text-align: right;
-        }
-
-        @media (max-width: 768px) {
-            .scoreboard {
-                position: static;
-                margin: 0 auto 20px;
-                max-width: 300px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Scoreboard -->
-        <div class="scoreboard" id="scoreboard"></div>
-
         <!-- Header -->
         <header>
             <h1>⚽ FC 와디즈 팀 밸런서</h1>
@@ -1051,7 +996,7 @@
             {
                 name: '박윤기',
                 type: 'DF',
-                nickname: '아다마 트라오레',
+                nickname: '아킨펜와로',
                 stats: {
                     speed: 8, acceleration: 8, stamina: 16,
                     shotPower: 12, shotAccuracy: 8, finishing: 12,
@@ -1068,6 +1013,28 @@
                     shotPower: 11, shotAccuracy: 13, finishing: 17,
                     passing: 12, defense: 7, physical: 14,
                     positioning: 16, mentality: 15, aggression: 12
+                }
+            },
+            {
+                name: '이준',
+                type: 'FW',
+                nickname: '베르파토프',
+                stats: {
+                    speed: 12, acceleration: 12, stamina: 16,
+                    shotPower: 14, shotAccuracy: 16, finishing: 17,
+                    passing: 14, defense: 7, physical: 13,
+                    positioning: 16, mentality: 15, aggression: 8
+                }
+            },
+            {
+                name: '윤홍걸',
+                type: 'FW',
+                nickname: '아다마 트라오레',
+                stats: {
+                    speed: 19, acceleration: 19, stamina: 16,
+                    shotPower: 14, shotAccuracy: 10, finishing: 10,
+                    passing: 10, defense: 10, physical: 18,
+                    positioning: 12, mentality: 13, aggression: 14
                 }
             }
         ];
@@ -1843,17 +1810,6 @@
                         return { name, type, stats };
                     });
 
-                    // 승점 데이터 파싱
-                    if (rowMap['승점']) {
-                        playerNames.forEach((name, idx) => {
-                            const score = rowMap['승점'][idx];
-                            if (score != null && SCOREBOARD_SCORES.hasOwnProperty(name)) {
-                                SCOREBOARD_SCORES[name] = Number(score) || 0;
-                            }
-                        });
-                        renderScoreboard();
-                    }
-
                     // 기존 선수 상태 유지하면서 업데이트
                     PLAYERS = newPlayers;
                     newPlayers.forEach(player => {
@@ -1886,39 +1842,8 @@
             }
         };
 
-        // === 승점 스코어보드 ===
-        const SCOREBOARD_SCORES = {
-            '문연이': 3,
-            '신현철': 6,
-            '이병민': 3,
-            '조진호': 3,
-            '박경원': 0,
-            '강주석': 0,
-            '조수빈': 3,
-            '조광진': 0,
-            '유상문': 0,
-            '박윤기': 0,
-            '김유석': 3
-        };
-
-        function renderScoreboard() {
-            const sorted = Object.keys(SCOREBOARD_SCORES).sort((a, b) => SCOREBOARD_SCORES[b] - SCOREBOARD_SCORES[a]);
-            const el = document.getElementById('scoreboard');
-
-            el.innerHTML = `
-                <div class="scoreboard-title">승점 순위</div>
-                ${sorted.map(name => `
-                    <div class="scoreboard-row">
-                        <span class="scoreboard-name">${name}</span>
-                        <span class="scoreboard-points">${SCOREBOARD_SCORES[name]}</span>
-                    </div>
-                `).join('')}
-            `;
-        }
-
         // 초기화 실행
         init();
-        renderScoreboard();
     </script>
 </body>
 </html>
